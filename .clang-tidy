@@ -1,0 +1,63 @@
+# clang-tidy is the second-cheapest static analyser after the compiler. For C
+# the most valuable families are bugprone-* and cert-* -- many cert checks map
+# directly to the CERT C rules this course cites by number (INT30-C, STR31-C,
+# ...), so a finding usually comes with homework attached.
+#
+# Run it with:  ./mec tidy [filter]
+#
+# NOTE ON THE DISABLED CHECKS. Several are switched off for THIS repository
+# and would be worth having on in a real project. Each exercise is one
+# self-contained translation unit with no header, and several deliberately
+# demonstrate the thing a check exists to prevent:
+#
+#   misc-use-internal-linkage, readability-identifier-length
+#       every free function in an exercise is used only by the tests below
+#       it, and one-letter loop counters are fine at these sizes;
+#   readability-magic-numbers, cppcoreguidelines-avoid-magic-numbers
+#       register addresses, protocol bytes and test expectations ARE numbers;
+#       naming 0x40021000 does happen (11.02 does it) but not in every test;
+#   bugprone-easily-swappable-parameters
+#       fires on (uint32_t addr, uint32_t value), which is what MMIO looks
+#       like; the fix it wants (strong types) is a C++ answer;
+#   readability-function-cognitive-complexity
+#       state-machine switch statements (chapter 13) trip it by design;
+#   cert-err33-c
+#       demands the return of every printf be checked; the harness does its
+#       own error handling and the exercises print nothing;
+#   clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+#       wants memcpy_s from Annex K, which neither glibc nor newlib ships
+#       (04.02 discusses why the Annex K story is a dead end);
+#   readability-else-after-return
+#       early-return-vs-else is a judgement call this course does not police.
+#
+# In short: this file is tuned so that `./mec tidy` says something useful
+# about the code YOU are writing. Do not copy these disables into a real
+# project without re-reading the list.
+---
+Checks: '-*,bugprone-*,cert-*,clang-analyzer-*,concurrency-*,misc-*,performance-*,portability-*,readability-*,-bugprone-easily-swappable-parameters,-cert-err33-c,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-misc-use-internal-linkage,-misc-include-cleaner,-readability-magic-numbers,-readability-identifier-length,-readability-function-cognitive-complexity,-readability-else-after-return,-readability-avoid-nested-conditional-operator,-readability-math-missing-parentheses'
+
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*'
+FormatStyle: file
+
+CheckOptions:
+  # The course's naming: snake_case throughout, UPPER_CASE for macros and
+  # enum constants -- the C mainstream from POSIX to the Linux kernel.
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+  - key: readability-identifier-naming.ParameterCase
+    value: lower_case
+  - key: readability-identifier-naming.StructCase
+    value: lower_case
+  - key: readability-identifier-naming.UnionCase
+    value: lower_case
+  - key: readability-identifier-naming.EnumCase
+    value: lower_case
+  - key: readability-identifier-naming.TypedefCase
+    value: lower_case
+  - key: readability-identifier-naming.EnumConstantCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE

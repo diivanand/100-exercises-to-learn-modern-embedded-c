@@ -1,0 +1,13 @@
+Copyright (c) 2026
+
+The exercises, solutions and documentation in this repository are released
+under the Creative Commons Attribution-NonCommercial 4.0 International
+license (CC BY-NC 4.0).
+
+    https://creativecommons.org/licenses/by-nc/4.0/
+
+This matches the license of "100 exercises to learn Rust" by Mainmatter, on
+which this course's format is based (via its C++ counterpart).
+
+The mect test harness in third_party/mect/ was written for this course and is
+covered by the same license.

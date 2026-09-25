@@ -1,0 +1,499 @@
+#!/usr/bin/env bash
+#
+# mec -- the workflow driver for this course.
+#
+#   ./mec next                 build and run the first exercise that is not
+#                              yet passing; this is the main loop
+#   ./mec test [filter]        run the exercises matching a filter
+#   ./mec verify               run every host exercise (what CI does)
+#   ./mec solution <filter>    diff your work against the reference solution
+#   ./mec list [filter]        list the exercises and where you are
+#   ./mec build [filter]       build without running
+#   ./mec flash <filter>       build, flash and run one NUCLEO exercise on the
+#                              board, reading its results over the ST-Link VCP
+#   ./mec listen               just watch the board's serial output
+#   ./mec format [--check]     run clang-format over the tree
+#   ./mec tidy [filter]        run clang-tidy over the tree
+#   ./mec clean                remove the build directories
+#
+# A "filter" is any substring of an exercise id, so `03`, `03_06`, `function`
+# and `06_function_pointers` all select 03.06.
+#
+# Chapters 15-17 (the NUCLEO-L476RG track) need arm-none-eabi-gcc, st-flash
+# and the board on USB. On a machine without them, `next` skips those
+# exercises and `test` explains; everything else works as before.
+
+set -euo pipefail
+
+readonly ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+readonly PRESET="${MEC_PRESET:-debug}"
+readonly BUILD_DIR="${ROOT}/cmake-build-${PRESET}"
+readonly TARGET_BUILD_DIR="${ROOT}/cmake-build-target"
+readonly SOLUTION_BUILD_DIR="${ROOT}/cmake-build-solutions"
+readonly PROGRESS_FILE="${ROOT}/.mec-progress"
+readonly TARGET_PASSED_FILE="${ROOT}/.mec-target-passed"
+
+# The on-target track starts at this chapter number (see cmake/AddExercise.cmake).
+readonly FIRST_TARGET_CHAPTER=15
+
+if [[ -t 1 ]]; then
+  readonly BOLD=$'\033[1m' DIM=$'\033[2m' RED=$'\033[31m' GREEN=$'\033[32m'
+  readonly YELLOW=$'\033[33m' BLUE=$'\033[34m' RESET=$'\033[0m'
+else
+  readonly BOLD='' DIM='' RED='' GREEN='' YELLOW='' BLUE='' RESET=''
+fi
+
+die() {
+  printf '%smec: %s%s\n' "${RED}" "$*" "${RESET}" >&2
+  exit 1
+}
+
+need() {
+  command -v "$1" >/dev/null 2>&1 || die "'$1' is not on your PATH. $2"
+}
+
+target_toolchain_available() {
+  command -v arm-none-eabi-gcc >/dev/null 2>&1
+}
+
+# A few exercise starters hang on purpose -- a poll loop whose flag the
+# optimiser hoisted, a wait that is never satisfied. Running them with a
+# deadline turns "the terminal is hung" into a message that says so.
+readonly DEADLINE_SECONDS=30
+
+run_exercise() {
+  local binary="$1"
+  perl -e 'alarm shift; exec @ARGV or exit 127' "${DEADLINE_SECONDS}" "${binary}"
+  local status=$?
+  if [[ ${status} -eq 142 || ${status} -eq 14 ]]; then
+    printf '\n%smec: it did not finish within %ss -- this exercise starts as a\n' \
+      "${YELLOW}" "${DEADLINE_SECONDS}"
+    printf '     program that never terminates. Read the header comment.%s\n' "${RESET}"
+    return 1
+  fi
+  return ${status}
+}
+
+# --- exercise inventory ------------------------------------------------------
+
+# Prints "<id>\t<directory>\t<kind>" for every exercise, in course order.
+#   id        = 11_03_read_modify_write
+#   directory = exercises/11_volatile_and_mmio/03_read_modify_write
+#   kind      = host | target
+all_exercises() {
+  local dir chapter name chapter_number kind
+  while IFS= read -r dir; do
+    chapter="$(basename "$(dirname "${dir}")")"
+    name="$(basename "${dir}")"
+    chapter_number="${chapter%%_*}"
+    kind=host
+    if [[ $((10#${chapter_number})) -ge ${FIRST_TARGET_CHAPTER} ]]; then
+      kind=target
+    fi
+    printf '%s\t%s\t%s\n' "${chapter_number}_${name}" "${dir}" "${kind}"
+  done < <(find "${ROOT}/exercises" -mindepth 2 -maxdepth 2 -type d | sort)
+}
+
+resolve_one() {
+  local filter="$1" matches
+  matches="$(all_exercises | grep -- "${filter}" || true)"
+  [[ -n "${matches}" ]] || die "no exercise matches '${filter}'. Try ./mec list"
+  if [[ "$(wc -l <<<"${matches}")" -gt 1 ]]; then
+    printf '%smec: '\''%s'\'' matches several exercises:%s\n' \
+      "${YELLOW}" "${filter}" "${RESET}" >&2
+    cut -f1 <<<"${matches}" | sed 's/^/  /' >&2
+    exit 1
+  fi
+  printf '%s\n' "${matches}"
+}
+
+require_board_for() {
+  local id="$1" kind="$2"
+  if [[ "${kind}" == target ]]; then
+    target_toolchain_available ||
+      die "${id} is a NUCLEO exercise and this machine has no arm-none-eabi-gcc. See README: 'The NUCLEO track'."
+  fi
+}
+
+# --- build -------------------------------------------------------------------
+
+configure() {
+  local dir="$1" preset="$2"
+  if [[ ! -f "${dir}/CMakeCache.txt" ]]; then
+    printf '%s==> configuring (%s)%s\n' "${BOLD}" "${preset}" "${RESET}"
+    cmake --preset "${preset}" >/dev/null || die "cmake configure failed"
+  fi
+}
+
+build_host_target() {
+  local target="$1"
+  configure "${BUILD_DIR}" "${PRESET}"
+  cmake --build "${BUILD_DIR}" --target "${target}"
+}
+
+build_cross_target() {
+  local target="$1"
+  configure "${TARGET_BUILD_DIR}" "target"
+  cmake --build "${TARGET_BUILD_DIR}" --target "${target}"
+}
+
+# --- serial ------------------------------------------------------------------
+
+serial_device() {
+  # The NUCLEO's ST-Link presents a CDC serial port. On macOS it appears as
+  # /dev/cu.usbmodem*, on Linux as /dev/ttyACM*.
+  local dev
+  dev="$(ls /dev/cu.usbmodem* 2>/dev/null | head -1 || true)"
+  [[ -z "${dev}" ]] && dev="$(ls /dev/ttyACM* 2>/dev/null | head -1 || true)"
+  printf '%s\n' "${dev}"
+}
+
+serial_configure() {
+  local dev="$1"
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    stty -f "${dev}" 115200 cs8 -cstopb -parenb -echo raw
+  else
+    stty -F "${dev}" 115200 cs8 -cstopb -parenb -echo raw
+  fi
+}
+
+# --- commands ----------------------------------------------------------------
+
+cmd_list() {
+  local filter="${1:-}" id dir kind current
+  current="$(cat "${PROGRESS_FILE}" 2>/dev/null || true)"
+  local last_chapter=''
+  while IFS=$'\t' read -r id dir kind; do
+    [[ -z "${filter}" || "${id}" == *"${filter}"* ]] || continue
+    local chapter
+    chapter="$(basename "$(dirname "${dir}")")"
+    if [[ "${chapter}" != "${last_chapter}" ]]; then
+      printf '\n%s%s%s\n' "${BOLD}" "${chapter//_/ }" "${RESET}"
+      last_chapter="${chapter}"
+    fi
+    local marker='  ' tag=''
+    [[ "${id}" == "${current}" ]] && marker="${BLUE}->${RESET}"
+    if [[ "${kind}" == target ]]; then
+      if grep -qx "${id}" "${TARGET_PASSED_FILE}" 2>/dev/null; then
+        tag="  ${GREEN}(passed on the board)${RESET}"
+      elif target_toolchain_available; then
+        tag="  ${DIM}(NUCLEO: ./mec flash ${id})${RESET}"
+      else
+        tag="  ${DIM}(NUCLEO: needs arm-none-eabi-gcc + the board)${RESET}"
+      fi
+    fi
+    printf '  %s %s%s\n' "${marker}" "${id}" "${tag}"
+  done < <(all_exercises)
+  printf '\n'
+}
+
+cmd_build() {
+  local filter="${1:-}"
+  if [[ -z "${filter}" ]]; then
+    configure "${BUILD_DIR}" "${PRESET}"
+    cmake --build "${BUILD_DIR}" --target exercises -- -k 0
+    return
+  fi
+  local id dir kind
+  IFS=$'\t' read -r id dir kind < <(resolve_one "${filter}")
+  if [[ "${kind}" == target ]]; then
+    require_board_for "${id}" "${kind}"
+    build_cross_target "ex_${id}"
+  else
+    build_host_target "ex_${id}"
+  fi
+}
+
+cmd_test() {
+  local filter="${1:-}"
+  if [[ -z "${filter}" ]]; then
+    cmd_verify
+    return
+  fi
+  local id dir kind
+  IFS=$'\t' read -r id dir kind < <(resolve_one "${filter}")
+  if [[ "${kind}" == target ]]; then
+    die "${id} runs on the board: ./mec flash ${filter}"
+  fi
+  printf '%s==> %s%s\n%s    %s/exercise.c%s\n' \
+    "${BOLD}" "${id}" "${RESET}" "${DIM}" "${dir#"${ROOT}/"}" "${RESET}"
+  build_host_target "ex_${id}"
+  run_exercise "${BUILD_DIR}/bin/exercises/$(basename "$(dirname "${dir}")")/ex_${id}"
+}
+
+cmd_verify() {
+  configure "${BUILD_DIR}" "${PRESET}"
+  # Some exercises deliberately do not compile until you have done the work.
+  # `-k 0` keeps going after a failure so that one unfinished exercise does
+  # not hide the state of the other ninety-nine.
+  cmake --build "${BUILD_DIR}" --target exercises -- -k 0 || true
+  ctest --test-dir "${BUILD_DIR}" --output-on-failure
+}
+
+# The main loop: walk the exercises in order and stop at the first one that
+# does not build or does not pass. That is the one you are working on.
+cmd_next() {
+  local id dir kind chapter binary skipped=0
+  while IFS=$'\t' read -r id dir kind; do
+    chapter="$(basename "$(dirname "${dir}")")"
+    binary="${BUILD_DIR}/bin/exercises/${chapter}/ex_${id}"
+
+    if [[ "${kind}" == target ]]; then
+      if grep -qx "${id}" "${TARGET_PASSED_FILE}" 2>/dev/null; then
+        printf '%s  ok%s %s %s(on the board)%s\n' \
+          "${GREEN}" "${RESET}" "${id}" "${DIM}" "${RESET}"
+        continue
+      fi
+      if ! target_toolchain_available; then
+        printf '%sskip%s %s %s(NUCLEO)%s\n' "${DIM}" "${RESET}" "${id}" "${DIM}" "${RESET}"
+        skipped=$((skipped + 1))
+        continue
+      fi
+      printf '%s==> %s runs on the board%s\n' "${BOLD}" "${id}" "${RESET}"
+      printf '    %s/exercise.c\n' "${dir#"${ROOT}/"}"
+      printf '    run it with: %s./mec flash %s%s\n' "${BLUE}" "${id}" "${RESET}"
+      printf '%s\n' "${id}" >"${PROGRESS_FILE}"
+      return 1
+    fi
+
+    if ! build_host_target "ex_${id}" >/dev/null 2>&1; then
+      printf '%s==> %s does not compile%s\n\n' "${RED}" "${id}" "${RESET}"
+      printf '%s\n' "${id}" >"${PROGRESS_FILE}"
+      build_host_target "ex_${id}" || true
+      printf '\n%s    %s/exercise.c%s\n' "${DIM}" "${dir#"${ROOT}/"}" "${RESET}"
+      return 1
+    fi
+
+    if ! (run_exercise "${binary}" >/dev/null 2>&1); then
+      printf '%s==> %s%s\n%s    %s/exercise.c%s\n\n' "${BOLD}" "${id}" "${RESET}" \
+        "${DIM}" "${dir#"${ROOT}/"}" "${RESET}"
+      printf '%s\n' "${id}" >"${PROGRESS_FILE}"
+      run_exercise "${binary}" || true
+      return 1
+    fi
+
+    printf '%s  ok%s %s\n' "${GREEN}" "${RESET}" "${id}"
+  done < <(all_exercises)
+
+  if [[ ${skipped} -gt 0 ]]; then
+    printf '\n%sEvery host exercise passes. %d NUCLEO exercises were skipped --\n' \
+      "${GREEN}${BOLD}" "${skipped}"
+    printf 'install arm-none-eabi-gcc and plug in the board for the bonus track.%s\n' "${RESET}"
+  else
+    printf '\n%sEvery exercise passes. That is the whole course.%s\n' \
+      "${GREEN}${BOLD}" "${RESET}"
+  fi
+  rm -f "${PROGRESS_FILE}"
+}
+
+cmd_solution() {
+  local filter="${1:-$(cat "${PROGRESS_FILE}" 2>/dev/null || true)}"
+  [[ -n "${filter}" ]] || die "usage: ./mec solution <filter>"
+  local id dir kind solution
+  IFS=$'\t' read -r id dir kind < <(resolve_one "${filter}")
+  solution="${ROOT}/solutions/$(basename "$(dirname "${dir}")")/$(basename "${dir}")/exercise.c"
+  [[ -f "${solution}" ]] || die "no solution checked in for ${id}"
+
+  printf '%s==> %s: your work vs. the reference solution%s\n\n' \
+    "${BOLD}" "${id}" "${RESET}"
+
+  # Strip each file's leading comment block before diffing. The exercise's
+  # header is the teaching material and the solution's is one line, so
+  # including them would bury the actual difference in forty lines of prose.
+  local yours reference
+  yours="$(mktemp)"
+  reference="$(mktemp)"
+  strip_header "${dir}/exercise.c" >"${yours}"
+  strip_header "${solution}" >"${reference}"
+
+  diff --unified=3 --label 'yours' --label 'reference' "${yours}" "${reference}" ||
+    true
+  rm -f "${yours}" "${reference}"
+}
+
+# Prints a file from its first non-comment, non-blank line onward.
+strip_header() {
+  awk '
+    started { print; next }
+    /^[[:space:]]*\/\// { next }
+    /^[[:space:]]*$/ { next }
+    { started = 1; print }
+  ' "$1"
+}
+
+# Build one NUCLEO exercise, flash it, and read the test results back over
+# the ST-Link's virtual COM port. If the exercise directory has a feed.txt,
+# its hex lines are sent to the board when the test asks for them (chapter 17
+# uses this to feed protocol frames to the parser running on the board).
+readonly TARGET_DEADLINE_SECONDS=60
+
+cmd_flash() {
+  local filter="${1:-}"
+  [[ -n "${filter}" ]] || die "usage: ./mec flash <filter>"
+  local id dir kind
+  IFS=$'\t' read -r id dir kind < <(resolve_one "${filter}")
+  [[ "${kind}" == target ]] || die "${id} is a host exercise: ./mec test ${filter}"
+  require_board_for "${id}" "${kind}"
+  need st-flash "Install the ST-Link tools with: brew install stlink"
+
+  build_cross_target "ex_${id}"
+  local chapter binary
+  chapter="$(basename "$(dirname "${dir}")")"
+  binary="${TARGET_BUILD_DIR}/bin/exercises/${chapter}/ex_${id}"
+  [[ -f "${binary}.bin" ]] || die "no binary at ${binary}.bin"
+
+  local dev
+  dev="$(serial_device)"
+  [[ -n "${dev}" ]] || die "no ST-Link serial port found. Is the board on USB?"
+  serial_configure "${dev}"
+
+  # Start capturing before flashing: st-flash resets the board, and the first
+  # bytes arrive as soon as the new image boots.
+  local capture
+  capture="$(mktemp)"
+  cat "${dev}" >"${capture}" &
+  local reader=$!
+  trap 'kill "${reader}" 2>/dev/null || true; rm -f "${capture}"' EXIT
+
+  printf '%s==> flashing %s%s\n' "${BOLD}" "${id}" "${RESET}"
+  st-flash --reset write "${binary}.bin" 0x08000000 >/dev/null 2>&1 ||
+    die "st-flash failed -- is the board on USB and not held by a debugger?"
+
+  printf '%s==> running on the board (deadline %ss)%s\n\n' \
+    "${BOLD}" "${TARGET_DEADLINE_SECONDS}" "${RESET}"
+
+  local feed="${dir}/feed.txt"
+  local fed=0 waited=0 summary=''
+  while [[ ${waited} -lt $((TARGET_DEADLINE_SECONDS * 10)) ]]; do
+    if [[ ${fed} -eq 0 && -f "${feed}" ]] &&
+      grep -q '\[mect-feed\] ready' "${capture}" 2>/dev/null; then
+      # The test asked for input: send each hex line, gently paced so a
+      # polled UART cannot drop bytes.
+      while IFS= read -r line; do
+        [[ -z "${line}" || "${line}" == \#* ]] && continue
+        printf '%s' "${line}" | xxd -r -p >"${dev}"
+        sleep 0.05
+      done <"${feed}"
+      fed=1
+    fi
+    summary="$(grep '\[mect\]' "${capture}" 2>/dev/null | head -1 || true)"
+    [[ -n "${summary}" ]] && break
+    sleep 0.1
+    waited=$((waited + 1))
+  done
+
+  kill "${reader}" 2>/dev/null || true
+  wait "${reader}" 2>/dev/null || true
+  trap - EXIT
+
+  sed 's/\r$//' "${capture}"
+  rm -f "${capture}"
+
+  if [[ -z "${summary}" ]]; then
+    printf '\n%sno test summary arrived within %ss. Total silence usually means\n' \
+      "${YELLOW}" "${TARGET_DEADLINE_SECONDS}"
+    printf 'the image did not boot -- a broken linker script or startup.%s\n' "${RESET}"
+    return 1
+  fi
+  if [[ "${summary}" == *" 0 failed"* ]]; then
+    grep -qx "${id}" "${TARGET_PASSED_FILE}" 2>/dev/null ||
+      printf '%s\n' "${id}" >>"${TARGET_PASSED_FILE}"
+    printf '\n%spassed on the board%s\n' "${GREEN}${BOLD}" "${RESET}"
+    return 0
+  fi
+  return 1
+}
+
+cmd_listen() {
+  local dev
+  dev="$(serial_device)"
+  [[ -n "${dev}" ]] || die "no ST-Link serial port found. Is the board on USB?"
+  serial_configure "${dev}"
+  printf '%slistening on %s (115200 8N1) -- ctrl-C to stop%s\n' \
+    "${DIM}" "${dev}" "${RESET}"
+  cat "${dev}"
+}
+
+cmd_format() {
+  need clang-format "Install it with: brew install llvm"
+  local -a files=()
+  local file
+  while IFS= read -r file; do
+    files+=("${file}")
+  done < <(find "${ROOT}/exercises" "${ROOT}/solutions" "${ROOT}/bsp" \
+    \( -name '*.c' -o -name '*.h' \) | sort)
+
+  if [[ "${1:-}" == "--check" ]]; then
+    clang-format --dry-run --Werror "${files[@]}"
+    printf '%sformatting is clean%s\n' "${GREEN}" "${RESET}"
+  else
+    clang-format -i "${files[@]}"
+    printf '%sformatted %d files%s\n' "${GREEN}" "${#files[@]}" "${RESET}"
+  fi
+}
+
+cmd_tidy() {
+  need clang-tidy "Install it with: brew install llvm"
+  configure "${BUILD_DIR}" "${PRESET}"
+  local filter="${1:-}"
+  local -a files=()
+  if [[ -n "${filter}" ]]; then
+    local id dir kind
+    IFS=$'\t' read -r id dir kind < <(resolve_one "${filter}")
+    [[ "${kind}" == host ]] ||
+      die "clang-tidy is only wired up for the host chapters; ${id} is a NUCLEO exercise"
+    files=("${dir}/exercise.c")
+  else
+    # Only the host chapters: the NUCLEO files are compiled with flags from
+    # the cross build, which this compilation database does not have.
+    local file dir_chapter
+    while IFS= read -r file; do
+      dir_chapter="$(basename "$(dirname "$(dirname "${file}")")")"
+      [[ $((10#${dir_chapter%%_*})) -ge ${FIRST_TARGET_CHAPTER} ]] && continue
+      files+=("${file}")
+    done < <(find "${ROOT}/exercises" -name 'exercise.c' | sort)
+  fi
+  clang-tidy -p "${BUILD_DIR}" "${files[@]}"
+}
+
+cmd_clean() {
+  rm -rf "${ROOT}"/cmake-build-*
+  rm -f "${PROGRESS_FILE}"
+  printf '%sremoved build directories%s\n' "${GREEN}" "${RESET}"
+}
+
+cmd_solutions_check() {
+  # Used by CI to prove every reference solution actually passes.
+  configure "${SOLUTION_BUILD_DIR}" "solutions"
+  cmake --build "${SOLUTION_BUILD_DIR}" --target solutions
+  ctest --test-dir "${SOLUTION_BUILD_DIR}" --output-on-failure -R '^solution/'
+}
+
+usage() {
+  sed -n '3,26p' "${BASH_SOURCE[0]}" | sed 's|^# \{0,1\}||'
+}
+
+main() {
+  need cmake "Install it with: brew install cmake"
+  local command="${1:-next}"
+  shift || true
+  case "${command}" in
+    next) cmd_next "$@" ;;
+    test | t) cmd_test "$@" ;;
+    verify) cmd_verify "$@" ;;
+    build) cmd_build "$@" ;;
+    list | ls) cmd_list "$@" ;;
+    solution | sol) cmd_solution "$@" ;;
+    flash) cmd_flash "$@" ;;
+    listen) cmd_listen "$@" ;;
+    format | fmt) cmd_format "$@" ;;
+    tidy) cmd_tidy "$@" ;;
+    clean) cmd_clean "$@" ;;
+    solutions-check) cmd_solutions_check "$@" ;;
+    help | -h | --help) usage ;;
+    *) die "unknown command '${command}'. Try ./mec help" ;;
+  esac
+}
+
+main "$@"

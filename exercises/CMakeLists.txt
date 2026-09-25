@@ -1,0 +1,1 @@
+mec_discover_exercises(exercise)

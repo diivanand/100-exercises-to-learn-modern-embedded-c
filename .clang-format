@@ -1,0 +1,27 @@
+# Formatting is a solved problem: pick a style, put it in a file, and never
+# argue about it again. This is LLVM style with the same adjustments as the
+# sibling C++ course, so the two repositories read alike.
+---
+Language: Cpp
+BasedOnStyle: LLVM
+ColumnLimit: 90
+IndentWidth: 2
+PointerAlignment: Right
+AllowShortFunctionsOnASingleLine: Empty
+BreakBeforeBraces: Attach
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  # The harness first: exercises include it before anything else.
+  - Regex: '^<mect/'
+    Priority: 1
+  # C standard library headers.
+  - Regex: '^<[a-z_]+\.h>$'
+    Priority: 2
+  # Everything else (POSIX, local headers).
+  - Regex: '.*'
+    Priority: 3
+# `int *p`, as C is written everywhere from K&R to the kernel. (The sibling
+# C++ course puts the * on the left, following that community's habit; the
+# declarator really does bind to the name in C, and `int *p, q;` is why.)
+DerivePointerAlignment: false
