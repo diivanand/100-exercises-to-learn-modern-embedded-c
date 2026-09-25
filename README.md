@@ -1,8 +1,9 @@
 # 100 exercises to learn modern embedded C
 
-> **Status (24 September 2026).** This course was drafted with AI assistance
-> (Claude) from the books and documentation listed at the end of this page,
-> and has not yet been through the author's own hands: an exercise may
+> **Status (25 September 2026).** As the author works through this
+> AI-assisted, generated repo, this section will be updated with how much
+> has been vetted and gone through by the human author, so you know which
+> parts have been human-vetted. **So far: none of it** — an exercise may
 > contain mistakes in its prose, its starter or its tests, and they get
 > fixed as each one is reached. Every solution passes its tests on the
 > host toolchain and the whole tree is checked by CI; the NUCLEO chapters
