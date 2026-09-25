@@ -14,6 +14,10 @@ void mect_port_putc(char c) {
 }
 
 int main(void) {
+  // Unbuffered: several starters crash mid-run, and a crash must not take
+  // the failure output it already earned down with it (stdio buffers are
+  // lost on SIGSEGV when output is piped).
+  setvbuf(stdout, NULL, _IONBF, 0);
   const int failed = mect_run_all();
   return failed == 0 ? 0 : 1;
 }

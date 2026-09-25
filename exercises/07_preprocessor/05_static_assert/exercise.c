@@ -1,0 +1,119 @@
+// =============================================================================
+//  07.05 -- _Static_assert: make the compiler check the contract
+// =============================================================================
+//
+//  NOTE: this exercise starts as a COMPILE ERROR -- several _Static_asserts
+//  fail. That is the feature working. Their messages are the task list.
+//
+//  A runtime assert (05 of chapter 09 weighs those) costs code space, runs
+//  only if the code path runs, and on a crashed MCU may never get to tell
+//  anyone. `_Static_assert(expr, "message")` costs NOTHING and runs on every
+//  compile: if the constant expression is false, the build fails with your
+//  message. C11 gave it to us as a keyword; C17's <assert.h> also spells it
+//  `static_assert`. (Effective C ch. 11, "Static Assertions".)
+//
+//  What earns a static assert in embedded code:
+//
+//   - STRUCT LAYOUT AGAINST A CONTRACT. A struct that mirrors a wire format
+//     or a register block is a claim about sizes and offsets. sizeof and
+//     offsetof are integer constant expressions, so the claim can be
+//     CHECKED: assert the size, assert each offset. Chapter 11 does exactly
+//     this against the STM32 reference manual, and chapter 15 against the
+//     linker script.
+//
+//   - RAM BUDGETS. `capacity * sizeof(element) <= budget` at compile time
+//     beats discovering the overflow in a map file -- or in a hard fault.
+//
+//   - ENUM/TABLE LOCKSTEP. A table indexed by an enum silently desyncs when
+//     someone adds a kind and forgets the entry (04.07 met this). Give the
+//     enum a trailing COUNT member and chain them together:
+//     `sizeof table / sizeof table[0] == KIND_COUNT`.
+//
+//   - PORTABILITY ASSUMPTIONS, made explicit: `sizeof(int) == 4`,
+//     `CHAR_BIT == 8` -- if the code quietly assumes it, loudly assert it.
+//
+//  The starter's struct was written smallest-member-first, so the compiler
+//  inserted padding to align the wider members (05.01 explains the rules),
+//  and neither the size nor any offset matches the wire contract; the
+//  record buffer then busts its RAM budget too. The scale table is missing
+//  an entry. The asserts caught all of it before a single test ran --
+//  which is the point.
+//
+//  TASK
+//    Fix the code to satisfy its asserts: reorder log_record to match the
+//    documented wire layout, and complete the scale table (the tests state
+//    the missing value). Do not weaken or delete an assert -- they are the
+//    contract, not the obstacle.
+//
+//  RUN IT
+//    ./mec test 07_05
+//
+// =============================================================================
+
+#include <mect/mect.h>
+
+#include <stddef.h>
+#include <stdint.h>
+
+// The wire format:
+//   offset 0: timestamp, 4 bytes
+//   offset 4: sensor_id, 2 bytes
+//   offset 6: flags, 1 byte
+//   offset 7: checksum, 1 byte
+struct log_record {
+  // TODO: smallest-first ordering leaves padding everywhere; the asserts
+  // below hold the layout to the contract above.
+  uint8_t flags;
+  uint32_t timestamp;
+  uint16_t sensor_id;
+  uint8_t checksum;
+};
+
+_Static_assert(sizeof(struct log_record) == 8,
+               "log_record must be exactly 8 bytes on the wire");
+_Static_assert(offsetof(struct log_record, timestamp) == 0,
+               "timestamp must sit at offset 0");
+_Static_assert(offsetof(struct log_record, sensor_id) == 4,
+               "sensor_id must sit at offset 4");
+_Static_assert(offsetof(struct log_record, flags) == 6,
+               "flags must sit at offset 6");
+_Static_assert(offsetof(struct log_record, checksum) == 7,
+               "checksum must sit at offset 7");
+
+// The RAM budget for the record buffer, also compile-time law.
+#define RECORD_CAPACITY 64
+_Static_assert(sizeof(struct log_record) * RECORD_CAPACITY <= 512,
+               "record buffer exceeds its 512-byte RAM budget");
+
+static struct log_record record_buffer[RECORD_CAPACITY];
+
+// Per-kind scale factors. The trailing COUNT member exists so the table and
+// the enum can be chained together by an assert.
+enum sensor_kind { SENSOR_TEMP, SENSOR_PRESSURE, SENSOR_HUMIDITY, SENSOR_KIND_COUNT };
+
+// TODO: one kind has no entry. The lockstep assert says so; the tests say
+// what the entry must be.
+static const uint32_t sensor_scale[] = {10, 1};
+
+_Static_assert(sizeof sensor_scale / sizeof sensor_scale[0] == SENSOR_KIND_COUNT,
+               "sensor_scale must have one entry per sensor_kind");
+
+static uint32_t scale_for(enum sensor_kind kind) {
+  return sensor_scale[kind];
+}
+
+TEST("the record layout matches the wire contract at run time too") {
+  CHECK_EQ(sizeof(struct log_record), (size_t)8);
+  CHECK_EQ(offsetof(struct log_record, checksum), (size_t)7);
+  CHECK_EQ(sizeof record_buffer, (size_t)512);
+
+  record_buffer[0] = (struct log_record){.timestamp = 1000, .sensor_id = 7};
+  CHECK_EQ(record_buffer[0].timestamp, 1000u);
+  CHECK_EQ(record_buffer[0].flags, 0u); // designated init zeroes the rest
+}
+
+TEST("every sensor kind has a scale") {
+  CHECK_EQ(scale_for(SENSOR_TEMP), 10u);
+  CHECK_EQ(scale_for(SENSOR_PRESSURE), 1u);
+  CHECK_EQ(scale_for(SENSOR_HUMIDITY), 2u);
+}
