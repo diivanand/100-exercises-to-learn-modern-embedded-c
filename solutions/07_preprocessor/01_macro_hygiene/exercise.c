@@ -36,7 +36,7 @@ TEST("min evaluates each argument exactly once") {
   uint32_t samples[] = {3, 7};
   size_t i = 0;
   const uint32_t m = min_u32(samples[i++], 5u);
-  CHECK_EQ(m, 3u); // min(3, 5)
+  CHECK_EQ(m, 3u);        // min(3, 5)
   CHECK_EQ(i, (size_t)1); // i++ must have happened once, not twice
 }
 

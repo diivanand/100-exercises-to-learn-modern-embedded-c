@@ -117,8 +117,7 @@ static enum sensor_status thermistor_read(void *ctx, int32_t *out) {
   return SENSOR_OK;
 }
 
-static const struct sensor_ops thermistor_ops = {thermistor_start,
-                                                 thermistor_read};
+static const struct sensor_ops thermistor_ops = {thermistor_start, thermistor_read};
 
 // --- backend: quadrature encoder (position advances one detent per read) ---------
 

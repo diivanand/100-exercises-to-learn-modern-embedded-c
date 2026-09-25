@@ -98,8 +98,7 @@ TEST("a flag that is already set succeeds, even with timeout zero") {
 
 TEST("a flag that never comes is a timeout, not a hang") {
   script(0); // never arrives
-  CHECK_EQ(uart_wait_flag(&fake_isr, UART_ISR_TXE, scripted_tick, 10),
-           WAIT_TIMEOUT);
+  CHECK_EQ(uart_wait_flag(&fake_isr, UART_ISR_TXE, scripted_tick, 10), WAIT_TIMEOUT);
 }
 
 TEST("a flag that arrives exactly at the deadline still succeeds") {

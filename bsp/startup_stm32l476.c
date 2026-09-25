@@ -11,9 +11,9 @@
 // it is exactly how every vendor's startup file lets you replace a default
 // interrupt handler with your own. See 10.x for the seam pattern in general.)
 
-#include "l476_regs.h"
-
 #include <stdint.h>
+
+#include "l476_regs.h"
 
 // Symbols the linker script defines. Their ADDRESSES are the values; the
 // `uint32_t` type is a polite fiction (15.01 explains).
@@ -137,46 +137,46 @@ union vector {
   const void *sp;
 };
 
-__attribute__((section(".isr_vector"), used)) static const union vector
-    vector_table[16 + 82] = {
-        [0] = {.sp = &_estack},
-        [1] = {.handler = Reset_Handler},
-        [2] = {.handler = NMI_Handler},
-        [3] = {.handler = HardFault_Handler},
-        [4] = {.handler = MemManage_Handler},
-        [5] = {.handler = BusFault_Handler},
-        [6] = {.handler = UsageFault_Handler},
-        // 7..10 reserved
-        [11] = {.handler = SVC_Handler},
-        [12] = {.handler = DebugMon_Handler},
-        // 13 reserved
-        [14] = {.handler = PendSV_Handler},
-        [15] = {.handler = SysTick_Handler},
-        // External interrupts: table position = 16 + IRQ number (RM0351
-        // table 58). Only the vectors the course uses are wired up; the
-        // designated initialiser leaves every other slot NULL, and the
-        // course never enables those IRQs. (A production table wires ALL
-        // of them to Default_Handler -- an enabled-by-accident interrupt
-        // through a NULL vector is a fault with the evidence missing.)
-        [16 + 6] = {.handler = EXTI0_IRQHandler},
-        [16 + 7] = {.handler = EXTI1_IRQHandler},
-        [16 + 8] = {.handler = EXTI2_IRQHandler},
-        [16 + 9] = {.handler = EXTI3_IRQHandler},
-        [16 + 10] = {.handler = EXTI4_IRQHandler},
-        [16 + 11] = {.handler = DMA1_CH1_IRQHandler},
-        [16 + 12] = {.handler = DMA1_CH2_IRQHandler},
-        [16 + 13] = {.handler = DMA1_CH3_IRQHandler},
-        [16 + 14] = {.handler = DMA1_CH4_IRQHandler},
-        [16 + 15] = {.handler = DMA1_CH5_IRQHandler},
-        [16 + 16] = {.handler = DMA1_CH6_IRQHandler},
-        [16 + 17] = {.handler = DMA1_CH7_IRQHandler},
-        [16 + 18] = {.handler = ADC1_2_IRQHandler},
-        [16 + 23] = {.handler = EXTI9_5_IRQHandler},
-        [16 + 28] = {.handler = TIM2_IRQHandler},
-        [16 + 35] = {.handler = SPI1_IRQHandler},
-        [16 + 36] = {.handler = SPI2_IRQHandler},
-        [16 + 37] = {.handler = USART1_IRQHandler},
-        [16 + 38] = {.handler = USART2_IRQHandler},
-        [16 + 39] = {.handler = USART3_IRQHandler},
-        [16 + 40] = {.handler = EXTI15_10_IRQHandler},
+__attribute__((section(".isr_vector"),
+               used)) static const union vector vector_table[16 + 82] = {
+    [0] = {.sp = &_estack},
+    [1] = {.handler = Reset_Handler},
+    [2] = {.handler = NMI_Handler},
+    [3] = {.handler = HardFault_Handler},
+    [4] = {.handler = MemManage_Handler},
+    [5] = {.handler = BusFault_Handler},
+    [6] = {.handler = UsageFault_Handler},
+    // 7..10 reserved
+    [11] = {.handler = SVC_Handler},
+    [12] = {.handler = DebugMon_Handler},
+    // 13 reserved
+    [14] = {.handler = PendSV_Handler},
+    [15] = {.handler = SysTick_Handler},
+    // External interrupts: table position = 16 + IRQ number (RM0351
+    // table 58). Only the vectors the course uses are wired up; the
+    // designated initialiser leaves every other slot NULL, and the
+    // course never enables those IRQs. (A production table wires ALL
+    // of them to Default_Handler -- an enabled-by-accident interrupt
+    // through a NULL vector is a fault with the evidence missing.)
+    [16 + 6] = {.handler = EXTI0_IRQHandler},
+    [16 + 7] = {.handler = EXTI1_IRQHandler},
+    [16 + 8] = {.handler = EXTI2_IRQHandler},
+    [16 + 9] = {.handler = EXTI3_IRQHandler},
+    [16 + 10] = {.handler = EXTI4_IRQHandler},
+    [16 + 11] = {.handler = DMA1_CH1_IRQHandler},
+    [16 + 12] = {.handler = DMA1_CH2_IRQHandler},
+    [16 + 13] = {.handler = DMA1_CH3_IRQHandler},
+    [16 + 14] = {.handler = DMA1_CH4_IRQHandler},
+    [16 + 15] = {.handler = DMA1_CH5_IRQHandler},
+    [16 + 16] = {.handler = DMA1_CH6_IRQHandler},
+    [16 + 17] = {.handler = DMA1_CH7_IRQHandler},
+    [16 + 18] = {.handler = ADC1_2_IRQHandler},
+    [16 + 23] = {.handler = EXTI9_5_IRQHandler},
+    [16 + 28] = {.handler = TIM2_IRQHandler},
+    [16 + 35] = {.handler = SPI1_IRQHandler},
+    [16 + 36] = {.handler = SPI2_IRQHandler},
+    [16 + 37] = {.handler = USART1_IRQHandler},
+    [16 + 38] = {.handler = USART2_IRQHandler},
+    [16 + 39] = {.handler = USART3_IRQHandler},
+    [16 + 40] = {.handler = EXTI15_10_IRQHandler},
 };

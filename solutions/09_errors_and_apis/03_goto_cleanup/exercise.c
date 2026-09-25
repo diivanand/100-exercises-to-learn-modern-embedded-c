@@ -30,7 +30,9 @@ static bool chan_acquire(void) {
   ++chan_outstanding;
   return true;
 }
-static void chan_release(void) { --chan_outstanding; }
+static void chan_release(void) {
+  --chan_outstanding;
+}
 
 static bool buf_acquire(void) {
   if (buf_fail_next) {
@@ -40,7 +42,9 @@ static bool buf_acquire(void) {
   ++buf_outstanding;
   return true;
 }
-static void buf_release(void) { --buf_outstanding; }
+static void buf_release(void) {
+  --buf_outstanding;
+}
 
 static bool lock_acquire(void) {
   if (lock_fail_next) {
@@ -50,7 +54,9 @@ static bool lock_acquire(void) {
   ++lock_outstanding;
   return true;
 }
-static void lock_release(void) { --lock_outstanding; }
+static void lock_release(void) {
+  --lock_outstanding;
+}
 
 static int transfers_done;
 

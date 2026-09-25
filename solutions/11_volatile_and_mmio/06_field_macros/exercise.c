@@ -27,14 +27,14 @@
 // oversized value can never spill into a neighbouring field. Clipping is
 // the defensive half of the policy; the other half is an assert in debug
 // builds (09.05) so the caller's bug is heard, not just contained.
-#define FIELD_SET(reg, F, val)                                                 \
+#define FIELD_SET(reg, F, val)                                                           \
   (((reg) & ~F##_MASK) | (((uint32_t)(val) << F##_POS) & F##_MASK))
 
 TEST("GET extracts right-justified values") {
   const uint32_t reg = 0xABCD1234u;
   CHECK_EQ(FIELD_GET(reg, PWM_EN), 0u);
-  CHECK_EQ(FIELD_GET(reg, PWM_MODE), 2u);        // (0x1234 & 0xE) >> 1
-  CHECK_EQ(FIELD_GET(reg, PWM_DUTY), 0x23u);     // (0x1234 & 0xFF0) >> 4
+  CHECK_EQ(FIELD_GET(reg, PWM_MODE), 2u);    // (0x1234 & 0xE) >> 1
+  CHECK_EQ(FIELD_GET(reg, PWM_DUTY), 0x23u); // (0x1234 & 0xFF0) >> 4
   CHECK_EQ(FIELD_GET(reg, PWM_PRESCALER), 0xABCDu);
 }
 
@@ -55,7 +55,7 @@ TEST("SET then GET round-trips") {
 
 TEST("an oversized value is clipped, never smeared into neighbours") {
   const uint32_t reg = FIELD_SET(0u, PWM_MODE, 0xFFu);
-  CHECK_EQ(reg, PWM_MODE_MASK);      // only the field's own bits
+  CHECK_EQ(reg, PWM_MODE_MASK); // only the field's own bits
   CHECK_EQ(FIELD_GET(reg, PWM_EN), 0u);
   CHECK_EQ(FIELD_GET(reg, PWM_DUTY), 0u);
 }

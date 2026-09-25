@@ -38,7 +38,7 @@ TEST("acknowledging one line leaves the other pending") {
 
   exti_acknowledge(&exti, EXTI_LINE_13);
 
-  CHECK_EQ(exti_read_pr(&exti) & EXTI_LINE_13, 0u); // ours: acknowledged
+  CHECK_EQ(exti_read_pr(&exti) & EXTI_LINE_13, 0u);         // ours: acknowledged
   CHECK_EQ(exti_read_pr(&exti) & EXTI_LINE_6, EXTI_LINE_6); // theirs: SURVIVES
 }
 

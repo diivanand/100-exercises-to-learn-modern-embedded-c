@@ -37,8 +37,8 @@ static uint16_t get_be16(const uint8_t *in) {
 }
 
 static uint32_t get_be32(const uint8_t *in) {
-  return ((uint32_t)in[0] << 24) | ((uint32_t)in[1] << 16) |
-         ((uint32_t)in[2] << 8) | (uint32_t)in[3];
+  return ((uint32_t)in[0] << 24) | ((uint32_t)in[1] << 16) | ((uint32_t)in[2] << 8) |
+         (uint32_t)in[3];
 }
 
 size_t report_pack(const struct sensor_report *r, uint8_t *out) {
@@ -92,8 +92,7 @@ TEST("a round trip proves consistency, not correctness") {
   // The starter passes this one: its pack and unpack share the same wrong
   // idea of the bytes, and the mistakes cancel. The golden-byte tests above
   // are the ones that speak for the receiver.
-  const struct sensor_report before = {
-      .sensor_id = 9, .reading_mv = 1650, .tick = 4242};
+  const struct sensor_report before = {.sensor_id = 9, .reading_mv = 1650, .tick = 4242};
   uint8_t wire[16] = {0};
   const size_t n = report_pack(&before, wire);
   struct sensor_report after;

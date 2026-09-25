@@ -1,0 +1,11 @@
+# 17.03 feed: two PINGs, arriving while the heartbeats run.
+# (Lines are paced ~50 ms apart by ./mec flash; the comment lines between
+# them just add a little more spacing.)
+
+# PING. CRC(00 01) = 0x0D2E.
+AA 00 01 0D 2E
+
+# ...a beat goes by...
+
+# PING again.
+AA 00 01 0D 2E

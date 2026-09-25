@@ -15,7 +15,7 @@ struct telemetry {
   uint8_t flags;      // offset 6
   uint8_t channel;    // offset 7
   uint8_t mode;       // offset 8, then 3 bytes trailing padding
-};                    // sizeof == 12
+}; // sizeof == 12
 
 bool telemetry_equal(const struct telemetry *a, const struct telemetry *b) {
   // Member by member (CERT EXP42-C). The 3 trailing padding bytes are still

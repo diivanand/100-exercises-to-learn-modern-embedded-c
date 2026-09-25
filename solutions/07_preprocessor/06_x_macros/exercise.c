@@ -6,11 +6,11 @@
 
 // THE list. Add a code here -- with its name -- and the enum, the name
 // table and the count all update together. Nothing else to remember.
-#define ERROR_LIST(X)                                                          \
-  X(ERR_OK, "ok")                                                              \
-  X(ERR_TIMEOUT, "timeout")                                                    \
-  X(ERR_CRC, "crc mismatch")                                                   \
-  X(ERR_BUSY, "busy")                                                          \
+#define ERROR_LIST(X)                                                                    \
+  X(ERR_OK, "ok")                                                                        \
+  X(ERR_TIMEOUT, "timeout")                                                              \
+  X(ERR_CRC, "crc mismatch")                                                             \
+  X(ERR_BUSY, "busy")                                                                    \
   X(ERR_OVERRUN, "overrun")
 
 #define X_AS_ENUM(sym, str) sym,

@@ -46,8 +46,7 @@ bool line_add_str(struct line *l, const char *s) {
   if (l->truncated) {
     return false; // the line is already full; keep it stable
   }
-  return line_commit(
-      l, snprintf(l->buf + l->len, sizeof l->buf - l->len, "%s", s));
+  return line_commit(l, snprintf(l->buf + l->len, sizeof l->buf - l->len, "%s", s));
 }
 
 bool line_add_u32(struct line *l, uint32_t v) {
@@ -57,8 +56,7 @@ bool line_add_u32(struct line *l, uint32_t v) {
   // PRIu32, not "%u": on this Mac uint32_t is unsigned int, but on
   // arm-none-eabi it is unsigned LONG, and "%u" there is undefined
   // behaviour. inttypes.h spells the format portably.
-  return line_commit(
-      l, snprintf(l->buf + l->len, sizeof l->buf - l->len, "%" PRIu32, v));
+  return line_commit(l, snprintf(l->buf + l->len, sizeof l->buf - l->len, "%" PRIu32, v));
 }
 
 TEST("a status line assembles in pieces") {
@@ -75,9 +73,9 @@ TEST("a status line assembles in pieces") {
 TEST("truncation clamps instead of walking past the end") {
   struct line l;
   line_reset(&l);
-  CHECK(line_add_str(&l, "sensor bank A: "));                    // 15 chars
-  CHECK_FALSE(line_add_str(&l, "0123456789ABCDEF0123456789"));  // 26 more
-  CHECK_EQ(l.len, 31u);         // capacity - 1, NOT 15 + 26
+  CHECK(line_add_str(&l, "sensor bank A: "));                  // 15 chars
+  CHECK_FALSE(line_add_str(&l, "0123456789ABCDEF0123456789")); // 26 more
+  CHECK_EQ(l.len, 31u); // capacity - 1, NOT 15 + 26
   CHECK(l.truncated);
   CHECK_EQ(strlen(l.buf), 31u); // still a valid, printable C string
   // A full line refuses further pieces rather than scribbling somewhere.

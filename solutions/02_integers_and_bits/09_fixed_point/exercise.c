@@ -59,7 +59,7 @@ TEST("ratios that overflow 32-bit intermediates") {
 
 TEST("centidegrees for the display") {
   CHECK_EQ(q16_to_centi(36 * Q16_ONE + Q16_ONE / 2), 3650); // 36.50 C
-  CHECK_EQ(q16_to_centi(400 * Q16_ONE), 40000); // the 32-bit trap: 400 C
+  CHECK_EQ(q16_to_centi(400 * Q16_ONE), 40000);             // the 32-bit trap: 400 C
   CHECK_EQ(q16_to_centi(328), 1); // 0.005 C rounds up to 1 centidegree
   CHECK_EQ(q16_to_centi(0), 0);
 }

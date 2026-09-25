@@ -15,13 +15,13 @@
 static bool release_mode = false;
 static unsigned assert_violations = 0;
 
-#define ASSERT(cond)                                                           \
-  do {                                                                         \
-    if (!release_mode) {                                                       \
-      if (!(cond)) {                                                           \
-        ++assert_violations;                                                   \
-      }                                                                        \
-    }                                                                          \
+#define ASSERT(cond)                                                                     \
+  do {                                                                                   \
+    if (!release_mode) {                                                                 \
+      if (!(cond)) {                                                                     \
+        ++assert_violations;                                                             \
+      }                                                                                  \
+    }                                                                                    \
   } while (0)
 
 // --- a small queue (stack-shaped, for brevity) ---------------------------------

@@ -193,8 +193,7 @@ TEST("every undecided pair holds its state (no zero-fill teleports)") {
       const int is_real = (s == LINK_IDLE && e == EV_SYNC) ||
                           (s == LINK_SYNCED && e == EV_HEADER) ||
                           (s == LINK_RECEIVING && e == EV_PAYLOAD_DONE) ||
-                          (s == LINK_FLASHING && e == EV_FLASH_DONE) ||
-                          (e == EV_ERROR);
+                          (s == LINK_FLASHING && e == EV_FLASH_DONE) || (e == EV_ERROR);
       if (is_real) {
         continue;
       }

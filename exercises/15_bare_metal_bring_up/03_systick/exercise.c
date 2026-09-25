@@ -47,10 +47,10 @@
 
 #include <mect/mect.h>
 
+#include <stdint.h>
+
 #include "bsp.h"
 #include "l476_regs.h"
-
-#include <stdint.h>
 
 static volatile uint32_t g_ticks; // written by the handler, read by mainline
 

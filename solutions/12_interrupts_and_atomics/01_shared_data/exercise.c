@@ -31,8 +31,7 @@ uint32_t counter_read(void) {
 static _Atomic uint32_t g_sample = 0xFFFFu; // value 0, check ~0
 
 void sample_publish(uint16_t value) {
-  const uint32_t packed =
-      ((uint32_t)value << 16) | (uint32_t)(uint16_t)~value;
+  const uint32_t packed = ((uint32_t)value << 16) | (uint32_t)(uint16_t)~value;
   atomic_store_explicit(&g_sample, packed, memory_order_relaxed);
 }
 

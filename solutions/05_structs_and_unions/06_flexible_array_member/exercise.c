@@ -68,8 +68,7 @@ const struct log_msg *log_get(size_t index) {
   }
   size_t off = 0;
   for (size_t i = 0; i < index; ++i) {
-    const struct log_msg *m =
-        (const struct log_msg *)(const void *)&log_arena[off];
+    const struct log_msg *m = (const struct log_msg *)(const void *)&log_arena[off];
     off += entry_size(m->len);
   }
   return (const struct log_msg *)(const void *)&log_arena[off];

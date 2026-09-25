@@ -50,14 +50,13 @@
 
 #include <mect/mect.h>
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 // TODO: the qualifiers promise "no overlap" -- and the second test's caller
 // needs overlap. Fix the contract, then honour it.
-void copy_words(uint32_t *restrict dst, const uint32_t *restrict src,
-                size_t n) {
+void copy_words(uint32_t *restrict dst, const uint32_t *restrict src, size_t n) {
   for (size_t i = 0; i < n; ++i) {
     dst[i] = src[i];
   }

@@ -10,6 +10,8 @@ PointerAlignment: Right
 AllowShortFunctionsOnASingleLine: Empty
 BreakBeforeBraces: Attach
 SortIncludes: CaseSensitive
+# The header comment IS the course text; its line breaks are deliberate.
+ReflowComments: false
 IncludeBlocks: Regroup
 IncludeCategories:
   # The harness first: exercises include it before anything else.

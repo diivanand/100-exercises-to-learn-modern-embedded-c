@@ -71,8 +71,7 @@ enum motor_event {
 struct motor;
 struct state;
 
-typedef const struct state *(*state_handler)(struct motor *m,
-                                             enum motor_event ev);
+typedef const struct state *(*state_handler)(struct motor *m, enum motor_event ev);
 
 struct state {
   state_handler handle;
@@ -94,10 +93,8 @@ static void enter_stopped(struct motor *m);
 static void enter_running(struct motor *m);
 static void enter_fault(struct motor *m);
 
-static const struct state STATE_STOPPED = {stopped_handle, enter_stopped,
-                                           "stopped"};
-static const struct state STATE_RUNNING = {running_handle, enter_running,
-                                           "running"};
+static const struct state STATE_STOPPED = {stopped_handle, enter_stopped, "stopped"};
+static const struct state STATE_RUNNING = {running_handle, enter_running, "running"};
 static const struct state STATE_FAULT = {fault_handle, enter_fault, "fault"};
 
 static void enter_stopped(struct motor *m) {
@@ -112,14 +109,12 @@ static void enter_fault(struct motor *m) {
   ++m->faults; // in real firmware: latch the fault register, kill PWM
 }
 
-static const struct state *stopped_handle(struct motor *m,
-                                          enum motor_event ev) {
+static const struct state *stopped_handle(struct motor *m, enum motor_event ev) {
   (void)m;
   return (ev == EV_GO) ? &STATE_RUNNING : &STATE_STOPPED;
 }
 
-static const struct state *running_handle(struct motor *m,
-                                          enum motor_event ev) {
+static const struct state *running_handle(struct motor *m, enum motor_event ev) {
   (void)m;
   switch (ev) {
   case EV_STOP:

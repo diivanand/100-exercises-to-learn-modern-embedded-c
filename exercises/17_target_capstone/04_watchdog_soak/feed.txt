@@ -1,0 +1,18 @@
+# 17.04 feed: four seconds of mixed weather.
+# CRCs computed by executing crc16_ccitt.
+
+# A clean PING. CRC(00 01) = 0x0D2E.
+AA 00 01 0D 2E
+
+# Line garbage (no SOF).
+DE AD BE EF
+
+# A PING with its CRC low byte corrupted (2E -> 2F): the starter's
+# "recovery" pause outlives the watchdog right here.
+AA 00 01 0D 2F
+
+# A clean STATUS request. CRC(00 03) = 0x2D6C.
+AA 00 03 2D 6C
+
+# A clean LED-on. CRC(01 02 01) = 0x8DEF.
+AA 01 02 01 8D EF

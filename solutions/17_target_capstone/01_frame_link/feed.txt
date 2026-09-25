@@ -1,0 +1,19 @@
+# 17.01 feed: what the host squirts at the board, one line per burst.
+# Frame format: AA | LEN | CMD | payload | CRC16(LEN..payload) hi lo
+# Every CRC below was computed by executing crc16_ccitt, not by hand.
+
+# 1. A clean PING. CRC over 00 01 = 0x0D2E.
+AA 00 01 0D 2E
+
+# 2. Line noise, including a stray SOF. The 0xFF after the stray 0xAA gets
+#    read as a LEN of 255 -- the parser must refuse it (max is 32).
+DE AD BE AA FF
+
+# 3. A clean STATUS request. CRC over 00 03 = 0x2D6C.
+AA 00 03 2D 6C
+
+# 4. The same PING with its CRC low byte corrupted (2E -> 2F).
+AA 00 01 0D 2F
+
+# 5. A clean LED-on command. CRC over 01 02 01 = 0x8DEF.
+AA 01 02 01 8D EF

@@ -201,9 +201,9 @@ static void handle_set_rate(const struct frame *f) {
 static void handle_get_stats(const struct frame *f) {
   (void)f;
   const uint16_t crc_errs = (uint16_t)(st.parser.crc_errors & 0xFFFFu);
-  const uint8_t payload[4] = {
-      (uint8_t)(crc_errs >> 8), (uint8_t)(crc_errs & 0xFFu),
-      (uint8_t)(st.unknown_cmds >> 8), (uint8_t)(st.unknown_cmds & 0xFFu)};
+  const uint8_t payload[4] = {(uint8_t)(crc_errs >> 8), (uint8_t)(crc_errs & 0xFFu),
+                              (uint8_t)(st.unknown_cmds >> 8),
+                              (uint8_t)(st.unknown_cmds & 0xFFu)};
   send_frame(CMD_GET_STATS | RSP_FLAG, payload, sizeof payload);
 }
 
@@ -348,8 +348,7 @@ TEST("noise between commands costs nothing") {
 
   uint8_t out[32];
   const size_t n = station_take_output(out, sizeof out);
-  const uint8_t expect[] = {0xAA, 0x00, 0x81, 0x9C, 0xA6,
-                            0xAA, 0x00, 0x81, 0x9C, 0xA6};
+  const uint8_t expect[] = {0xAA, 0x00, 0x81, 0x9C, 0xA6, 0xAA, 0x00, 0x81, 0x9C, 0xA6};
   CHECK_EQ(n, sizeof expect);
   CHECK_MEM_EQ(out, expect, sizeof expect);
 }

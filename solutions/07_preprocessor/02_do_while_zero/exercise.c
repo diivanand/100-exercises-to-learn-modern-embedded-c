@@ -11,10 +11,10 @@ static unsigned ok_count = 0;
 // do { } while (0) packages the two statements as ONE statement that still
 // demands its trailing semicolon -- so the macro call parses exactly like a
 // function call in every position, if/else included (CERT PRE10-C).
-#define RECORD_FAULT(code)                                                     \
-  do {                                                                         \
-    fault_count++;                                                             \
-    last_fault = (code);                                                       \
+#define RECORD_FAULT(code)                                                               \
+  do {                                                                                   \
+    fault_count++;                                                                       \
+    last_fault = (code);                                                                 \
   } while (0)
 
 static void reset_counters(void) {

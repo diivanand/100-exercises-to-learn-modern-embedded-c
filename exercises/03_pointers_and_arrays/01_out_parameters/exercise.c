@@ -48,8 +48,8 @@
 #include <mect/mect.h>
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 // Splits a version word from flash. Returns false if the word is erased
 // (0xFFFFFFFF). `major` and `minor` may each be NULL if the caller does not

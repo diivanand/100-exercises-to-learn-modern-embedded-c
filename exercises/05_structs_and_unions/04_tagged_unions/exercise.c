@@ -75,8 +75,8 @@ union event_payload {
 };
 
 struct event {
-  enum event_type type;    // the tag: which member of `as` is live
-  union event_payload as;  // the payload: one member, ever
+  enum event_type type;   // the tag: which member of `as` is live
+  union event_payload as; // the payload: one member, ever
 };
 
 // Constructors: the tag and its payload are set together or not at all.
@@ -86,9 +86,8 @@ static struct event event_button(uint8_t id, bool pressed) {
 }
 
 static struct event event_adc(uint8_t channel, uint16_t millivolts) {
-  return (struct event){
-      .type = EVENT_ADC_READING,
-      .as.adc = {.channel = channel, .millivolts = millivolts}};
+  return (struct event){.type = EVENT_ADC_READING,
+                        .as.adc = {.channel = channel, .millivolts = millivolts}};
 }
 
 static struct event event_uart_byte(uint8_t byte) {

@@ -40,8 +40,7 @@ void startup_call_init_array(void) {
   }
 }
 
-static uint32_t data_markers[4] = {0x11AA22BBu, 0x33CC44DDu, 0x55EE66FFu,
-                                   0xC0FFEE99u};
+static uint32_t data_markers[4] = {0x11AA22BBu, 0x33CC44DDu, 0x55EE66FFu, 0xC0FFEE99u};
 static uint32_t bss_field[256]; // no initialiser: the language says all zero
 
 TEST(".data: initialised globals hold their written values") {

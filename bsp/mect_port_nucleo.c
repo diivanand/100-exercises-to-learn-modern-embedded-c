@@ -2,10 +2,10 @@
 // main() runs the tests once and parks the core. `./mec flash` watches the
 // serial port for the summary line.
 
+#include <mect/mect.h>
+
 #include "bsp.h"
 #include "l476_regs.h"
-
-#include <mect/mect.h>
 
 void mect_port_putc(char c) {
   bsp_uart_putc(c);

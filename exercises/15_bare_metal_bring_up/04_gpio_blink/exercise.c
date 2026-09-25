@@ -44,10 +44,10 @@
 
 #include <mect/mect.h>
 
+#include <stdint.h>
+
 #include "bsp.h"
 #include "l476_regs.h"
-
-#include <stdint.h>
 
 // --- given: the 15.03 tick ----------------------------------------------------
 
@@ -60,8 +60,7 @@ void SysTick_Handler(void) {
 static void systick_init_1khz(void) {
   SYSTICK->RVR = BSP_SYSCLK_HZ / 1000u - 1u;
   SYSTICK->CVR = 0;
-  SYSTICK->CSR =
-      SYSTICK_CSR_ENABLE | SYSTICK_CSR_TICKINT | SYSTICK_CSR_CLKSOURCE_CPU;
+  SYSTICK->CSR = SYSTICK_CSR_ENABLE | SYSTICK_CSR_TICKINT | SYSTICK_CSR_CLKSOURCE_CPU;
 }
 
 static void delay_ms(uint32_t ms) {

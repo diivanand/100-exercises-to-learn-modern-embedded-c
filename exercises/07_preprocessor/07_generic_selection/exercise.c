@@ -83,17 +83,17 @@ static double abs_d(double v) {
 
 // Complete, for study: a _Generic that maps types to string literals -- no
 // call, just selection.
-#define type_name(x)                                                           \
-  _Generic((x),                                                                \
-      char: "char",                                                            \
-      signed char: "signed char",                                              \
-      unsigned char: "unsigned char",                                          \
-      int: "int",                                                              \
-      unsigned int: "unsigned int",                                            \
-      float: "float",                                                          \
-      double: "double",                                                        \
-      char *: "char *",                                                        \
-      const char *: "const char *",                                            \
+#define type_name(x)                                                                     \
+  _Generic((x),                                                                          \
+      char: "char",                                                                      \
+      signed char: "signed char",                                                        \
+      unsigned char: "unsigned char",                                                    \
+      int: "int",                                                                        \
+      unsigned int: "unsigned int",                                                      \
+      float: "float",                                                                    \
+      double: "double",                                                                  \
+      char *: "char *",                                                                  \
+      const char *: "const char *",                                                      \
       default: "something else")
 
 TEST("abs_val dispatches across all four types") {

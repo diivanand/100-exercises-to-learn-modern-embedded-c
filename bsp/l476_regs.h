@@ -27,32 +27,32 @@
 // the single most common bring-up bug.
 
 struct rcc_regs {
-  volatile uint32_t CR;         // 0x00 clock control
-  volatile uint32_t ICSCR;      // 0x04
-  volatile uint32_t CFGR;       // 0x08 clock configuration
-  volatile uint32_t PLLCFGR;    // 0x0C
+  volatile uint32_t CR;          // 0x00 clock control
+  volatile uint32_t ICSCR;       // 0x04
+  volatile uint32_t CFGR;        // 0x08 clock configuration
+  volatile uint32_t PLLCFGR;     // 0x0C
   volatile uint32_t PLLSAI1CFGR; // 0x10
   volatile uint32_t PLLSAI2CFGR; // 0x14
-  volatile uint32_t CIER;       // 0x18
-  volatile uint32_t CIFR;       // 0x1C
-  volatile uint32_t CICR;       // 0x20
-  uint32_t reserved0;           // 0x24
-  volatile uint32_t AHB1RSTR;   // 0x28
-  volatile uint32_t AHB2RSTR;   // 0x2C
-  volatile uint32_t AHB3RSTR;   // 0x30
-  uint32_t reserved1;           // 0x34
-  volatile uint32_t APB1RSTR1;  // 0x38
-  volatile uint32_t APB1RSTR2;  // 0x3C
-  volatile uint32_t APB2RSTR;   // 0x40
-  uint32_t reserved2;           // 0x44
-  volatile uint32_t AHB1ENR;    // 0x48
-  volatile uint32_t AHB2ENR;    // 0x4C  GPIO port clocks live here
-  volatile uint32_t AHB3ENR;    // 0x50
-  uint32_t reserved3;           // 0x54
-  volatile uint32_t APB1ENR1;   // 0x58  USART2, TIM2..7, PWR, DAC, IWDG-adjacent
-  volatile uint32_t APB1ENR2;   // 0x5C
-  volatile uint32_t APB2ENR;    // 0x60  USART1, SYSCFG, TIM1/8/15..17, ADC? no --
-                                //       ADC is on AHB2 on this part (RM0351 6.4.17)
+  volatile uint32_t CIER;        // 0x18
+  volatile uint32_t CIFR;        // 0x1C
+  volatile uint32_t CICR;        // 0x20
+  uint32_t reserved0;            // 0x24
+  volatile uint32_t AHB1RSTR;    // 0x28
+  volatile uint32_t AHB2RSTR;    // 0x2C
+  volatile uint32_t AHB3RSTR;    // 0x30
+  uint32_t reserved1;            // 0x34
+  volatile uint32_t APB1RSTR1;   // 0x38
+  volatile uint32_t APB1RSTR2;   // 0x3C
+  volatile uint32_t APB2RSTR;    // 0x40
+  uint32_t reserved2;            // 0x44
+  volatile uint32_t AHB1ENR;     // 0x48
+  volatile uint32_t AHB2ENR;     // 0x4C  GPIO port clocks live here
+  volatile uint32_t AHB3ENR;     // 0x50
+  uint32_t reserved3;            // 0x54
+  volatile uint32_t APB1ENR1;    // 0x58  USART2, TIM2..7, PWR, DAC, IWDG-adjacent
+  volatile uint32_t APB1ENR2;    // 0x5C
+  volatile uint32_t APB2ENR;     // 0x60  USART1, SYSCFG, TIM1/8/15..17, ADC? no --
+                                 //       ADC is on AHB2 on this part (RM0351 6.4.17)
 };
 
 #define RCC ((struct rcc_regs *)0x40021000u)
@@ -231,11 +231,11 @@ struct dma_channel_regs {
 };
 
 struct dma_regs {
-  volatile uint32_t ISR;                // 0x00 status for all 7 channels
-  volatile uint32_t IFCR;               // 0x04 write 1 to clear
-  struct dma_channel_regs CH[7];        // 0x08 channels 1..7 (index 0 = CH1)
-  uint32_t reserved0[5];                // 0x94
-  volatile uint32_t CSELR;              // 0xA8 request routing (L4-specific)
+  volatile uint32_t ISR;         // 0x00 status for all 7 channels
+  volatile uint32_t IFCR;        // 0x04 write 1 to clear
+  struct dma_channel_regs CH[7]; // 0x08 channels 1..7 (index 0 = CH1)
+  uint32_t reserved0[5];         // 0x94
+  volatile uint32_t CSELR;       // 0xA8 request routing (L4-specific)
 };
 
 #define DMA1 ((struct dma_regs *)0x40020000u)
@@ -251,10 +251,10 @@ _Static_assert(offsetof(struct dma_regs, CSELR) == 0xA8, "RM0351 11.6.7");
 // --- IWDG: independent watchdog (RM0351 ch. 32) ---------------------------------
 
 struct iwdg_regs {
-  volatile uint32_t KR;  // 0x00 key: 0xCCCC start, 0xAAAA feed, 0x5555 unlock
-  volatile uint32_t PR;  // 0x04 prescaler
-  volatile uint32_t RLR; // 0x08 reload
-  volatile uint32_t SR;  // 0x0C status
+  volatile uint32_t KR;   // 0x00 key: 0xCCCC start, 0xAAAA feed, 0x5555 unlock
+  volatile uint32_t PR;   // 0x04 prescaler
+  volatile uint32_t RLR;  // 0x08 reload
+  volatile uint32_t SR;   // 0x0C status
   volatile uint32_t WINR; // 0x10
 };
 
@@ -310,14 +310,14 @@ static inline void nvic_enable_irq(uint32_t irqn) {
 
 // System control block: just the members the course touches.
 struct scb_regs {
-  volatile uint32_t CPUID; // 0x00
-  volatile uint32_t ICSR;  // 0x04
-  volatile uint32_t VTOR;  // 0x08 vector table offset
-  volatile uint32_t AIRCR; // 0x0C
-  volatile uint32_t SCR;   // 0x10 sleep configuration
-  volatile uint32_t CCR;   // 0x14
+  volatile uint32_t CPUID;   // 0x00
+  volatile uint32_t ICSR;    // 0x04
+  volatile uint32_t VTOR;    // 0x08 vector table offset
+  volatile uint32_t AIRCR;   // 0x0C
+  volatile uint32_t SCR;     // 0x10 sleep configuration
+  volatile uint32_t CCR;     // 0x14
   volatile uint8_t SHPR[12]; // 0x18 system handler priorities
-  volatile uint32_t SHCSR; // 0x24
+  volatile uint32_t SHCSR;   // 0x24
 };
 
 #define SCB ((struct scb_regs *)0xE000ED00u)

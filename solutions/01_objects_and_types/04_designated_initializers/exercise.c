@@ -40,9 +40,8 @@ const char *uart_error_name(enum uart_error e) {
   // without a new string leaves a visible NULL hole instead of shifting
   // every later name onto the wrong meaning.
   static const char *const NAMES[UART_ERROR_COUNT] = {
-      [UART_OK] = "ok",           [UART_OVERRUN] = "overrun",
-      [UART_FRAMING] = "framing", [UART_PARITY] = "parity",
-      [UART_NOISE] = "noise",
+      [UART_OK] = "ok",         [UART_OVERRUN] = "overrun", [UART_FRAMING] = "framing",
+      [UART_PARITY] = "parity", [UART_NOISE] = "noise",
   };
   // The cast makes one comparison cover both ends: a negative value wraps
   // to a huge unsigned one and fails the same bound.

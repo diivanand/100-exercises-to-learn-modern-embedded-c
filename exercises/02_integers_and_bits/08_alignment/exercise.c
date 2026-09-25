@@ -83,8 +83,7 @@ struct dma_slot {
 
 TEST("big-endian words at odd offsets") {
   //             hdr   [ u32be @ 1  .......]  [ u32be @ 5 ........]
-  const uint8_t stream[] = {0xAA, 0x12, 0x34, 0x56, 0x78, 0xDE, 0xAD,
-                            0xBE, 0xEF};
+  const uint8_t stream[] = {0xAA, 0x12, 0x34, 0x56, 0x78, 0xDE, 0xAD, 0xBE, 0xEF};
   CHECK_EQ(read_u32be(stream + 1), 0x12345678u);
   CHECK_EQ(read_u32be(stream + 5), 0xDEADBEEFu);
 }

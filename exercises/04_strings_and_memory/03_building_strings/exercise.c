@@ -92,9 +92,9 @@ TEST("a status line assembles in pieces") {
 TEST("truncation clamps instead of walking past the end") {
   struct line l;
   line_reset(&l);
-  CHECK(line_add_str(&l, "sensor bank A: "));                    // 15 chars
-  CHECK_FALSE(line_add_str(&l, "0123456789ABCDEF0123456789"));  // 26 more
-  CHECK_EQ(l.len, 31u);         // capacity - 1, NOT 15 + 26
+  CHECK(line_add_str(&l, "sensor bank A: "));                  // 15 chars
+  CHECK_FALSE(line_add_str(&l, "0123456789ABCDEF0123456789")); // 26 more
+  CHECK_EQ(l.len, 31u); // capacity - 1, NOT 15 + 26
   CHECK(l.truncated);
   CHECK_EQ(strlen(l.buf), 31u); // still a valid, printable C string
   // A full line refuses further pieces rather than scribbling somewhere.

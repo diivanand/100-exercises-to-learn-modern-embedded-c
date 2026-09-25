@@ -1,0 +1,18 @@
+# 17.02 feed: a five-command conversation.
+# Frame: AA | LEN | CMD | payload | CRC16(LEN..payload) hi lo
+# CRCs computed by executing crc16_ccitt.
+
+# PING. CRC(00 01) = 0x0D2E.
+AA 00 01 0D 2E
+
+# LED on (payload 01). CRC(01 02 01) = 0x8DEF.
+AA 01 02 01 8D EF
+
+# LED toggle (payload 02). CRC(01 02 02) = 0xBD8C.
+AA 01 02 02 BD 8C
+
+# An unknown command, 0x7F. CRC(00 7F) = 0x9277.
+AA 00 7F 92 77
+
+# STATUS. CRC(00 03) = 0x2D6C.
+AA 00 03 2D 6C

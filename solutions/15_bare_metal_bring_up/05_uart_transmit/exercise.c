@@ -2,10 +2,10 @@
 
 #include <mect/mect.h>
 
+#include <stdint.h>
+
 #include "bsp.h"
 #include "l476_regs.h"
-
-#include <stdint.h>
 
 uint32_t brr_for_baud(uint32_t clk_hz, uint32_t baud) {
   // Add half the divisor before dividing: the integer spelling of "round
@@ -36,8 +36,8 @@ void uart2_send_line(const char *s) {
 }
 
 TEST("BRR rounds to the nearest divider") {
-  CHECK_EQ(brr_for_baud(4000000, 115200), 35u);  // 34.72 -> 35, not 34
-  CHECK_EQ(brr_for_baud(4000000, 9600), 417u);   // 416.67 -> 417
+  CHECK_EQ(brr_for_baud(4000000, 115200), 35u);   // 34.72 -> 35, not 34
+  CHECK_EQ(brr_for_baud(4000000, 9600), 417u);    // 416.67 -> 417
   CHECK_EQ(brr_for_baud(80000000, 115200), 694u); // 694.44 -> 694: they agree
   // ... and the BSP agrees with you:
   CHECK_EQ(USART2->BRR, brr_for_baud(BSP_SYSCLK_HZ, 115200));

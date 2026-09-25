@@ -18,8 +18,7 @@ enum {
   CFG_ACK = 1u << 0,      // bit 0
 };
 
-uint8_t radio_config_byte(bool enable, unsigned channel, unsigned power,
-                          bool ack) {
+uint8_t radio_config_byte(bool enable, unsigned channel, unsigned power, bool ack) {
   uint8_t byte = 0;
   if (enable) {
     byte |= CFG_ENABLE;

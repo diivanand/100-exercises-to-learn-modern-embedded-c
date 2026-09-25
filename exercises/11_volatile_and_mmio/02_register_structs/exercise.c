@@ -70,8 +70,8 @@ struct gpio_regs {
   volatile uint32_t BSRR;    // 0x18  RM0351 8.5.7
   volatile uint32_t LCKR;    // 0x1C  RM0351 8.5.8
   // TODO: the manual documents TWO alternate-function registers here.
-  volatile uint32_t AFR;     // 0x20
-  volatile uint32_t BRR;     // 0x24 -- but RM0351 8.5.11 says 0x28
+  volatile uint32_t AFR; // 0x20
+  volatile uint32_t BRR; // 0x24 -- but RM0351 8.5.11 says 0x28
 };
 
 // An excerpt of the RCC map, which -- unlike GPIO -- has holes in it.
@@ -105,12 +105,9 @@ _Static_assert(offsetof(struct gpio_regs, BRR) == 0x28, "RM0351 8.5.11");
 _Static_assert(sizeof(struct gpio_regs) == 0x2C, "MODER..BRR spans 0x2C bytes");
 
 _Static_assert(offsetof(struct rcc_regs_excerpt, CICR) == 0x20, "RM0351 6.4.9");
-_Static_assert(offsetof(struct rcc_regs_excerpt, AHB1RSTR) == 0x28,
-               "RM0351 6.4.10");
-_Static_assert(offsetof(struct rcc_regs_excerpt, APB1RSTR1) == 0x38,
-               "RM0351 6.4.13");
-_Static_assert(offsetof(struct rcc_regs_excerpt, AHB2ENR) == 0x4C,
-               "RM0351 6.4.17");
+_Static_assert(offsetof(struct rcc_regs_excerpt, AHB1RSTR) == 0x28, "RM0351 6.4.10");
+_Static_assert(offsetof(struct rcc_regs_excerpt, APB1RSTR1) == 0x38, "RM0351 6.4.13");
+_Static_assert(offsetof(struct rcc_regs_excerpt, AHB2ENR) == 0x4C, "RM0351 6.4.17");
 
 // --- runtime checks against a fake block --------------------------------------
 // On the board the base address comes from the memory map:
@@ -136,7 +133,7 @@ TEST("RCC members skip the reserved holes") {
   uint32_t fake[20] = {0};
   struct rcc_regs_excerpt *rcc = (struct rcc_regs_excerpt *)fake;
 
-  rcc->AHB2ENR = 1u;   // GPIOAEN
+  rcc->AHB2ENR = 1u; // GPIOAEN
   rcc->APB1RSTR1 = 2u;
 
   CHECK_EQ(fake[0x4C / 4], 1u);

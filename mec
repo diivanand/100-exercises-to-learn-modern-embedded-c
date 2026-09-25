@@ -53,8 +53,24 @@ need() {
   command -v "$1" >/dev/null 2>&1 || die "'$1' is not on your PATH. $2"
 }
 
+# The ARM toolchain often is not on PATH (the macOS cask and Arm's own
+# installer both put it in a versioned directory). Find it before giving up.
+locate_arm_toolchain() {
+  command -v arm-none-eabi-gcc >/dev/null 2>&1 && return 0
+  local d
+  for d in "${HOME}"/opt/arm-gnu-toolchain-*/bin \
+    /Applications/ArmGNUToolchain/*/arm-none-eabi/bin \
+    /opt/homebrew/opt/gcc-arm-embedded/bin; do
+    if [[ -x "${d}/arm-none-eabi-gcc" ]]; then
+      export PATH="${d}:${PATH}"
+      return 0
+    fi
+  done
+  return 1
+}
+
 target_toolchain_available() {
-  command -v arm-none-eabi-gcc >/dev/null 2>&1
+  locate_arm_toolchain
 }
 
 # A few exercise starters hang on purpose -- a poll loop whose flag the

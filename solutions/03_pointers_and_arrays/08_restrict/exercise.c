@@ -2,8 +2,8 @@
 
 #include <mect/mect.h>
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 // No restrict: this function's CONTRACT now allows overlap, so it must

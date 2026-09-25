@@ -2,10 +2,10 @@
 
 #include <mect/mect.h>
 
+#include <stdint.h>
+
 #include "bsp.h"
 #include "l476_regs.h"
-
-#include <stdint.h>
 
 static volatile uint32_t g_ticks; // written by the handler, read by mainline
 
@@ -19,8 +19,7 @@ void systick_init(uint32_t tick_hz) {
   // an eighth of the speed you calculated.
   SYSTICK->RVR = BSP_SYSCLK_HZ / tick_hz - 1u;
   SYSTICK->CVR = 0; // any write clears; guarantees a full first lap
-  SYSTICK->CSR =
-      SYSTICK_CSR_ENABLE | SYSTICK_CSR_TICKINT | SYSTICK_CSR_CLKSOURCE_CPU;
+  SYSTICK->CSR = SYSTICK_CSR_ENABLE | SYSTICK_CSR_TICKINT | SYSTICK_CSR_CLKSOURCE_CPU;
 }
 
 uint32_t ticks_now(void) {

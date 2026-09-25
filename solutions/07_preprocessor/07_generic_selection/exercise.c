@@ -21,23 +21,23 @@ static double abs_d(double v) {
 // parenthesis then calls whichever one was selected. Only the selected
 // branch is type-checked against the call, which is why one macro can serve
 // four signatures.
-#define abs_val(x)                                                             \
+#define abs_val(x)                                                                       \
   _Generic((x), int: abs_i, long long: abs_ll, float: abs_f, double: abs_d)(x)
 
 // A _Generic that maps types to string literals -- no call, just selection.
 // Note what is NOT here: no promotion happens, so float selects "float" and
 // only an actual int selects "int".
-#define type_name(x)                                                           \
-  _Generic((x),                                                                \
-      char: "char",                                                            \
-      signed char: "signed char",                                              \
-      unsigned char: "unsigned char",                                          \
-      int: "int",                                                              \
-      unsigned int: "unsigned int",                                            \
-      float: "float",                                                          \
-      double: "double",                                                        \
-      char *: "char *",                                                        \
-      const char *: "const char *",                                            \
+#define type_name(x)                                                                     \
+  _Generic((x),                                                                          \
+      char: "char",                                                                      \
+      signed char: "signed char",                                                        \
+      unsigned char: "unsigned char",                                                    \
+      int: "int",                                                                        \
+      unsigned int: "unsigned int",                                                      \
+      float: "float",                                                                    \
+      double: "double",                                                                  \
+      char *: "char *",                                                                  \
+      const char *: "const char *",                                                      \
       default: "something else")
 
 TEST("abs_val dispatches across all four types") {

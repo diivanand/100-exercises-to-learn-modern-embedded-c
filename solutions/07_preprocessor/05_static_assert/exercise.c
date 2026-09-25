@@ -26,8 +26,7 @@ _Static_assert(offsetof(struct log_record, timestamp) == 0,
                "timestamp must sit at offset 0");
 _Static_assert(offsetof(struct log_record, sensor_id) == 4,
                "sensor_id must sit at offset 4");
-_Static_assert(offsetof(struct log_record, flags) == 6,
-               "flags must sit at offset 6");
+_Static_assert(offsetof(struct log_record, flags) == 6, "flags must sit at offset 6");
 _Static_assert(offsetof(struct log_record, checksum) == 7,
                "checksum must sit at offset 7");
 

@@ -45,8 +45,8 @@ struct frame_parser {
   enum parser_state state;
   struct frame frame;
   uint8_t payload_got;
-  uint16_t crc;      // running CRC over LEN, CMD, payload
-  uint8_t crc_hi;    // first received CRC byte, parked until the second
+  uint16_t crc;   // running CRC over LEN, CMD, payload
+  uint8_t crc_hi; // first received CRC byte, parked until the second
   uint32_t crc_errors;
 };
 
@@ -115,8 +115,8 @@ enum frame_event parser_feed(struct frame_parser *p, uint8_t byte) {
 // --- tests ----------------------------------------------------------------------
 
 // Feeds a byte string, counting what comes out.
-static void run(struct frame_parser *p, const uint8_t *bytes, size_t n,
-                unsigned *frames, unsigned *errors) {
+static void run(struct frame_parser *p, const uint8_t *bytes, size_t n, unsigned *frames,
+                unsigned *errors) {
   for (size_t i = 0; i < n; ++i) {
     switch (parser_feed(p, bytes[i])) {
     case EVENT_FRAME:

@@ -16,8 +16,8 @@ static uint16_t read_be16(const uint8_t *p) {
 }
 
 static uint32_t read_be32(const uint8_t *p) {
-  return ((uint32_t)p[0] << 24) | ((uint32_t)p[1] << 16) |
-         ((uint32_t)p[2] << 8) | (uint32_t)p[3];
+  return ((uint32_t)p[0] << 24) | ((uint32_t)p[1] << 16) | ((uint32_t)p[2] << 8) |
+         (uint32_t)p[3];
 }
 
 static int16_t as_i16(uint16_t u) {

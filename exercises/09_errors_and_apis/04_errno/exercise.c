@@ -87,8 +87,8 @@ TEST("garbage and trailing junk are rejected") {
 
 TEST("values that do not fit an int32_t are rejected, not truncated") {
   int32_t v = 0;
-  CHECK_FALSE(parse_i32("2147483648", &v));  // INT32_MAX + 1
-  CHECK_FALSE(parse_i32("-2147483649", &v)); // INT32_MIN - 1
+  CHECK_FALSE(parse_i32("2147483648", &v));            // INT32_MAX + 1
+  CHECK_FALSE(parse_i32("-2147483649", &v));           // INT32_MIN - 1
   CHECK_FALSE(parse_i32("999999999999999999999", &v)); // > LONG_MAX too
 }
 

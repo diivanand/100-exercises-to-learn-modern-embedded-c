@@ -80,7 +80,7 @@ static void bus_record(enum store_kind kind) {
 // --- the mailbox -----------------------------------------------------------------
 
 struct mailbox {
-  uint8_t payload[4];    // ordinary memory
+  uint8_t payload[4];      // ordinary memory
   volatile uint32_t ready; // the "go" flag an ISR polls
 };
 

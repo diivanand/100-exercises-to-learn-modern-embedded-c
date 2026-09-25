@@ -7,7 +7,7 @@
 
 enum bus_status {
   BUS_OK = 0,
-  BUS_ERR_STATE,   // called in the wrong lifecycle state
+  BUS_ERR_STATE, // called in the wrong lifecycle state
   BUS_ERR_BAD_ARG,
 };
 
@@ -39,7 +39,7 @@ enum bus_status bus_init(uint16_t addr) {
 enum bus_status bus_read(uint8_t reg, uint8_t *out) {
   if (!bus.initialised) {
     return BUS_ERR_STATE; // not "return 0": silence here becomes a wrong
-  }                       // sensor value forty modules downstream
+  } // sensor value forty modules downstream
   if (reg >= sizeof fake_device_regs) {
     return BUS_ERR_BAD_ARG;
   }

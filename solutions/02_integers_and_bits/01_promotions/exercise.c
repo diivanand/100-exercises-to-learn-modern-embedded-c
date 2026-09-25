@@ -29,8 +29,8 @@ uint32_t u32_from_be_bytes(const uint8_t b[4]) {
   // signed. This function is the portable answer to "how do I read a
   // big-endian field?" -- and 02.06 will show why a cast-the-pointer
   // "shortcut" is not.
-  return ((uint32_t)b[0] << 24) | ((uint32_t)b[1] << 16) |
-         ((uint32_t)b[2] << 8) | (uint32_t)b[3];
+  return ((uint32_t)b[0] << 24) | ((uint32_t)b[1] << 16) | ((uint32_t)b[2] << 8) |
+         (uint32_t)b[3];
 }
 
 TEST("is_all_ones") {

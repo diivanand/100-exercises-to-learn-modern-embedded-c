@@ -51,7 +51,7 @@
 
 enum bus_status {
   BUS_OK = 0,
-  BUS_ERR_STATE,   // called in the wrong lifecycle state
+  BUS_ERR_STATE, // called in the wrong lifecycle state
   BUS_ERR_BAD_ARG,
 };
 

@@ -86,5 +86,5 @@ TEST("every fault has a name") {
 TEST("out of range gets a placeholder, not a wild read") {
   CHECK_EQ(fault_name(FAULT_COUNT), "?");
   CHECK_EQ(fault_name((enum fault_code)99), "?");
-  CHECK_EQ(fault_name((enum fault_code)-1), "?");
+  CHECK_EQ(fault_name((enum fault_code) - 1), "?");
 }

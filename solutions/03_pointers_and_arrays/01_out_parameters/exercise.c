@@ -3,8 +3,8 @@
 #include <mect/mect.h>
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 bool version_split(uint32_t reg, unsigned *major, unsigned *minor) {
   // Validate FIRST. Nothing is written until the input is known good, so a

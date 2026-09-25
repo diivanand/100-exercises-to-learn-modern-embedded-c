@@ -74,8 +74,8 @@ void timers_init(struct timer_bank *b) {
   *b = (struct timer_bank){0};
 }
 
-static int arm(struct timer_bank *b, uint32_t due, uint32_t period,
-               bool periodic, timer_cb cb, void *ctx) {
+static int arm(struct timer_bank *b, uint32_t due, uint32_t period, bool periodic,
+               timer_cb cb, void *ctx) {
   for (int i = 0; i < TIMER_SLOTS; ++i) {
     if (!b->slot[i].active) {
       b->slot[i] = (struct sw_timer){
@@ -92,13 +92,13 @@ static int arm(struct timer_bank *b, uint32_t due, uint32_t period,
   return -1; // full: the caller decides whether that is fatal (09.01)
 }
 
-int timers_arm_oneshot(struct timer_bank *b, uint32_t now, uint32_t delay,
-                       timer_cb cb, void *ctx) {
+int timers_arm_oneshot(struct timer_bank *b, uint32_t now, uint32_t delay, timer_cb cb,
+                       void *ctx) {
   return arm(b, now + delay, 0, false, cb, ctx);
 }
 
-int timers_arm_periodic(struct timer_bank *b, uint32_t now, uint32_t period,
-                        timer_cb cb, void *ctx) {
+int timers_arm_periodic(struct timer_bank *b, uint32_t now, uint32_t period, timer_cb cb,
+                        void *ctx) {
   return arm(b, now + period, period, true, cb, ctx);
 }
 
@@ -205,7 +205,7 @@ TEST("a periodic timer keeps the beat under dispatch jitter") {
 
 struct chain {
   struct timer_bank *bank;
-  uint32_t now;      // the test keeps this current before each dispatch
+  uint32_t now; // the test keeps this current before each dispatch
   unsigned fires;
   bool arm_failed;
 };

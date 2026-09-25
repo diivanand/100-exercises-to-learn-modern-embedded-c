@@ -65,8 +65,8 @@ static enum fault_code last_fault = FAULT_NONE;
 static unsigned ok_count = 0;
 
 // TODO: two statements pretending to be one.
-#define RECORD_FAULT(code)                                                     \
-  fault_count++;                                                               \
+#define RECORD_FAULT(code)                                                               \
+  fault_count++;                                                                         \
   last_fault = (code)
 
 static void reset_counters(void) {

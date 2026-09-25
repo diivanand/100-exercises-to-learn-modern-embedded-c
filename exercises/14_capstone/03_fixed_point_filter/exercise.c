@@ -130,7 +130,7 @@ TEST("steady state holds: no limit cycle, no drift") {
 }
 
 TEST("wire conversion rounds to nearest and saturates at the rails") {
-  CHECK_EQ(q16_to_mv_i16(65540800), 1000);          // 1000.073 mV -> 1000
+  CHECK_EQ(q16_to_mv_i16(65540800), 1000);            // 1000.073 mV -> 1000
   CHECK_EQ(q16_to_mv_i16(999 * 65536 + 32768), 1000); // exactly .5: up
   CHECK_EQ(q16_to_mv_i16(999 * 65536 + 32767), 999);
   CHECK_EQ(q16_to_mv_i16(-65536), -1);
