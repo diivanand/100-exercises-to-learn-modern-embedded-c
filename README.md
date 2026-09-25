@@ -6,7 +6,7 @@
 > parts have been human-vetted. **So far: none of it** — an exercise may
 > contain mistakes in its prose, its starter or its tests, and they get
 > fixed as each one is reached. Every solution passes its tests on the
-> host toolchain and the whole tree is checked by CI; the NUCLEO chapters
+> host toolchain; the NUCLEO chapters
 > (15 to 17) additionally cross-compile for the Cortex-M4, but **have not
 > yet been run on the board** — the first flash is still to come.
 
@@ -49,7 +49,7 @@ is the *discipline*, not the hardware:
 ## Requirements
 
 - **A C17 toolchain.** Apple clang (via `xcode-select --install`) or any
-  recent clang/GCC. CI builds macOS clang and Linux GCC.
+  recent clang/GCC.
 - **CMake 3.24+** and **Ninja** — `brew install cmake ninja`.
 - Optionally **clang-format** and **clang-tidy** — `brew install llvm`.
 
@@ -82,7 +82,7 @@ When every exercise passes, you are done.
 ```
 ./mec next                 the main loop: run the first unfinished exercise
 ./mec test <filter>        run one exercise    (./mec test 03_06, or function_pointers)
-./mec verify               run everything, as CI does
+./mec verify               run every host exercise
 ./mec list                 the curriculum, and where you are in it
 ./mec solution <filter>    diff your work against the reference solution
 ./mec build <filter>       build without running
@@ -199,9 +199,9 @@ Total silence after a flash usually means the image did not boot — which in
 this track is a lesson, not an accident: 15.01 starts with a broken linker
 script and 15.02 with empty startup code.
 
-CI cross-compiles every NUCLEO exercise and solution with arm-none-eabi-gcc
-on every push, which catches the large majority of mistakes; the board
-catches the rest.
+`scripts/check-course.sh` cross-compiles every NUCLEO exercise and solution
+with arm-none-eabi-gcc when the toolchain is installed, which catches the
+large majority of mistakes; the board catches the rest.
 
 ## Solutions
 

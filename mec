@@ -5,7 +5,7 @@
 #   ./mec next                 build and run the first exercise that is not
 #                              yet passing; this is the main loop
 #   ./mec test [filter]        run the exercises matching a filter
-#   ./mec verify               run every host exercise (what CI does)
+#   ./mec verify               run every host exercise
 #   ./mec solution <filter>    diff your work against the reference solution
 #   ./mec list [filter]        list the exercises and where you are
 #   ./mec build [filter]       build without running
@@ -480,7 +480,7 @@ cmd_clean() {
 }
 
 cmd_solutions_check() {
-  # Used by CI to prove every reference solution actually passes.
+  # Proves every reference solution actually passes.
   configure "${SOLUTION_BUILD_DIR}" "solutions"
   cmake --build "${SOLUTION_BUILD_DIR}" --target solutions
   ctest --test-dir "${SOLUTION_BUILD_DIR}" --output-on-failure -R '^solution/'

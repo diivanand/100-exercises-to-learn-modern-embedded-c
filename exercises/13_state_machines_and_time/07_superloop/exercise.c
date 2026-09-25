@@ -29,7 +29,7 @@
 //  This exercise instruments the loop the way a profiler would: each step
 //  returns its work units, the app records the worst step, and the tests
 //  hold every step to APP_STEP_BUDGET. Budgets-as-tests is real practice:
-//  a step that grows past its budget fails CI long before it fails on a
+//  a step that grows past its budget fails on your desk long before it fails on a
 //  scope. When your budgets genuinely cannot be met cooperatively --
 //  priorities, long computations, blocking I/O -- that is what an RTOS is
 //  for: preemption moves the budget problem into the scheduler, at the
