@@ -52,6 +52,8 @@
 
 #include <stdint.h>
 
+static uint16_t read_be16(const uint8_t *b);
+
 // A big-endian 16-bit message id sits in the first two bytes of a frame.
 uint16_t message_id(const uint8_t *frame) {
   return read_be16(frame);
@@ -63,12 +65,14 @@ static uint16_t read_be16(const uint8_t *b) {
 
 // A fuel gauge reports 0..255; the UI wants 0..100.
 uint8_t battery_percent(uint8_t raw) {
-  return raw * 100.0 / 255;
+  return (uint8_t)((uint32_t)raw * 100U / 255U);
 }
 
 // Status byte: bit 7 = link up, bits 6..0 = battery percent (0..100).
 uint8_t pack_status(uint8_t percent, uint8_t link_ok) {
-  return percent;
+  uint8_t bit7_val = link_ok == 0 ? 0 : 1U << 7U;
+  uint8_t mask_keep_bits_0_thru_6 = 0x7F;
+  return bit7_val | (percent & mask_keep_bits_0_thru_6);
 }
 
 TEST("message id is read big-endian") {

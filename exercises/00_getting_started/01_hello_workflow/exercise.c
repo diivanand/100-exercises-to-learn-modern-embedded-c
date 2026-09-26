@@ -52,8 +52,7 @@
 
 uint32_t adc_to_millivolts(uint32_t raw) {
   // TODO: convert a 0..4095 reading into 0..3300 millivolts.
-  (void)raw;
-  return 0;
+  return raw * 3300 / 4095;
 }
 
 TEST("full scale reads the supply voltage") {

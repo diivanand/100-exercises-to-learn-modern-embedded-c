@@ -1,11 +1,12 @@
 # 100 exercises to learn modern embedded C
 
-> **Status (25 September 2026).** As the author works through this
+> **Status (26 September 2026).** As the author works through this
 > AI-assisted, generated repo, this section will be updated with how much
 > has been vetted and gone through by the human author, so you know which
-> parts have been human-vetted. **So far: none of it** — an exercise may
-> contain mistakes in its prose, its starter or its tests, and they get
-> fixed as each one is reached. Every solution passes its tests on the
+> parts have been human-vetted. **So far: 2 of 115** — exercises 00.01
+> (hello workflow) and 00.02 (reading diagnostics). Everything from 00.03
+> onward is unvetted: an exercise may contain mistakes in its prose, its
+> starter or its tests, and they get fixed as each one is reached. Every solution passes its tests on the
 > host toolchain; the NUCLEO chapters
 > (15 to 17) additionally cross-compile for the Cortex-M4, but **have not
 > yet been run on the board** — the first flash is still to come.
